@@ -1,0 +1,57 @@
+# robots.txt для [ДОМЕН] – шаблон.
+# Отдавать обработчиком (route), а не статикой: списки закрытого и роботов живут в коде.
+# ВАЖНО: робот, у которого есть своя группа, правила группы «*» НЕ читает.
+# Поэтому закрытые разделы повторены в каждой группе.
+
+User-agent: *
+Disallow: /app/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /reset
+Disallow: /print/
+Allow: /
+
+# Яндекс: Clean-param убирает метки из адресов, чтобы ссылки с метками
+# не считались отдельными страницами.
+User-agent: Yandex
+Disallow: /app/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /reset
+Disallow: /print/
+Allow: /
+Clean-param: ref&utm_source&utm_medium&utm_campaign&utm_content&utm_term&yclid&gclid /
+
+User-agent: Googlebot
+Disallow: /app/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /reset
+Disallow: /print/
+Allow: /
+
+# ИИ-роботы: открыты для GEO (открывать или нет – решается по проекту; закрыть – Disallow: /).
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: YandexAdditional
+User-agent: YandexAdditionalBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Disallow: /app/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /reset
+Disallow: /print/
+Allow: /
+
+Sitemap: https://[ДОМЕН]/sitemap.xml

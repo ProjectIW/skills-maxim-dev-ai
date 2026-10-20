@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Слепая оценка моделей</title>
+<!--
+  Шаблон слепой оценки. Заполни ITEMS ниже: у каждого фрагмента – звук (относительный путь
+  или data:audio) и ответы моделей под буквами. Какая буква – какая модель, в этот файл НЕ пиши:
+  ключ храни отдельно (key.json у автора стенда). Порядок букв перемешивай для каждого
+  фрагмента при генерации. Оценщик ставит 1–10 и комментарий, затем «Собрать ответы» и
+  отправляет текст автору.
+-->
+<style>
+  :root { --bg:#fff; --fg:#15171c; --muted:#5d6370; --line:#e3e5ea; --soft:#f5f6f8; --accent:#3b4cca; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#111317; --fg:#e8eaee; --muted:#9aa1ad; --line:#2a2e36; --soft:#1a1d23; --accent:#8098f9; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 28px; max-width: 70ch; }
+  section { border-top: 1px solid var(--line); padding: 24px 0; }
+  h2 { font-size: 18px; margin: 0 0 4px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  audio { width: 100%; margin: 8px 0 16px; }
+  .variants { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .variant { background: var(--soft); border-radius: 10px; padding: 14px 16px; }
+  .variant h3 { margin: 0 0 8px; font-size: 16px; }
+  .variant pre { white-space: pre-wrap; font: 14px/1.5 inherit; font-family: inherit; margin: 0 0 12px; max-height: 360px; overflow: auto; }
+  label { display: block; font-size: 14px; color: var(--muted); margin-top: 8px; }
+  input[type=number], textarea { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  input[type=number] { width: 90px; }
+  button { font: inherit; background: var(--accent); color: #fff; border: 0; border-radius: 999px; padding: 10px 22px; cursor: pointer; }
+  #out { margin-top: 16px; min-height: 160px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Слепая оценка: [ЗАДАЧА]</h1>
+  <p class="lead">Послушайте фрагмент и оцените каждый ответ от 1 до 10: насколько точно и полезно. Какая модель за какой буквой, вы не знаете, так и задумано. В комментарии – что именно не так: имя, число, кто говорит, пропуск, выдумка.</p>
+  <p><label>Ваше имя <input id="who" type="text" style="max-width:280px"></label></p>
+  <div id="items"></div>
+  <section>
+    <button id="collect" type="button">Собрать ответы</button>
+    <textarea id="out" readonly placeholder="Здесь появится текст для отправки"></textarea>
+  </section>
+</main>
+<script>
+// Пример (выдуманный текст): замени на свои фрагменты. Буквы у каждого фрагмента уже перемешаны генератором.
+const ITEMS = [
+  {
+    id: "f1",
+    title: "Фрагмент 1: [домен, длительность]",
+    audio: "audio/f1.mp3",
+    variants: {
+      X: "Спикер 1: Добрый день, начнём с бюджета на третий квартал.\nСпикер 2: Сумма – два миллиона четыреста тысяч.",
+      Y: "Спикер 1: Добрый день, начнём с бюджета на третий квартал. Сумма – два миллиона четыреста тысяч.",
+      Z: "Спикер 1: Добрый день, начнем с бюджета на 3 квартал.\nСпикер 2: Сумма 2400000."
+    }
+  }
+];
+
+const root = document.getElementById("items");
+for (const it of ITEMS) {
+  const s = document.createElement("section");
+  s.innerHTML = `<h2>${it.title}</h2><p class="hint">Сначала послушайте, потом читайте ответы.</p>` +
+    (it.audio ? `<audio controls preload="none" src="${it.audio}"></audio>` : "") +
+    `<div class="variants">${Object.entries(it.variants).map(([k, text]) => `
+      <div class="variant">
+        <h3>Ответ ${k}</h3>
+        <pre></pre>
+        <label>Оценка 1–10 <input type="number" min="1" max="10" data-item="${it.id}" data-v="${k}" data-kind="score"></label>
+        <label>Комментарий <textarea rows="2" data-item="${it.id}" data-v="${k}" data-kind="note"></textarea></label>
+      </div>`).join("")}</div>`;
+  // текст ответов вставляем как текст, не как HTML
+  s.querySelectorAll(".variant pre").forEach((pre, i) => { pre.textContent = Object.values(it.variants)[i]; });
+  root.appendChild(s);
+}
+
+document.getElementById("collect").addEventListener("click", () => {
+  const who = document.getElementById("who").value.trim() || "без имени";
+  const lines = [`Оценщик: ${who}`];
+  for (const it of ITEMS) {
+    for (const v of Object.keys(it.variants)) {
+      const score = document.querySelector(`[data-item="${it.id}"][data-v="${v}"][data-kind="score"]`).value || "-";
+      const note = document.querySelector(`[data-item="${it.id}"][data-v="${v}"][data-kind="note"]`).value.trim().replace(/\s+/g, " ");
+      lines.push(`${it.id}\t${v}\t${score}\t${note}`);
+    }
+  }
+  const out = document.getElementById("out");
+  out.value = lines.join("\n");
+  out.select();
+  try { navigator.clipboard.writeText(out.value); } catch (e) { /* можно скопировать вручную */ }
+});
+</script>
+</body>
+</html>
