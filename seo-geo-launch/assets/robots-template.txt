@@ -22,7 +22,7 @@ Disallow: /register
 Disallow: /reset
 Disallow: /print/
 Allow: /
-Clean-param: ref&utm_source&utm_medium&utm_campaign&utm_content&utm_term&yclid&gclid /
+Clean-param: ref&utm_source&utm_medium&utm_campaign&utm_content&utm_term&yclid&gclid&ysclid&fbclid&_openstat /
 
 User-agent: Googlebot
 Disallow: /app/
@@ -46,6 +46,7 @@ User-agent: YandexAdditional
 User-agent: YandexAdditionalBot
 User-agent: Google-Extended
 User-agent: Applebot-Extended
+User-agent: DuckAssistBot
 Disallow: /app/
 Disallow: /api/
 Disallow: /login
